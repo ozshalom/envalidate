@@ -60,8 +60,6 @@ def read_env(
             value = read_key(key, envalidator, environment)
             valid_value = envalidator.envalidate(value)
             cleaned_env[key] = valid_value
-        except ValueError as ex:
-            errors[key] = EnvError(f"{key} : {str(ex)}")
         except (EnvError, EnvMissingError) as ex:
             errors[key] = ex
     reporter.report(errors)

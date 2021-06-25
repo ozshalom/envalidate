@@ -8,6 +8,8 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field
 
+from .exceptions import EnvError
+
 
 class EnValidator(BaseModel, ABC):
     """Validator."""
@@ -45,7 +47,7 @@ class EnValidator(BaseModel, ABC):
         """Valid key and raise error if invalid or return value if valid."""
         valid_value = self.__validate__value__(value)
         if self.choices and valid_value not in self.choices:
-            raise ValueError(
+            raise EnvError(
                 self.format_validator_desc(
                     f"Invalid {self.name} input: {value}, not in [{self.choices}]"
                 )
@@ -61,7 +63,7 @@ class EnValidator(BaseModel, ABC):
         example = f"eg. {self.example}" if self.example else ""
         docs = f"See. {self.docs}" if self.docs else ""
         desc = self.desc or ""
-        return f"{message}\n{desc} {example} {docs}".strip()
+        return f"{message} [{desc} {example} {docs}]".strip()
 
 
 class Str(EnValidator):
@@ -93,7 +95,7 @@ class Bool(EnValidator):
             return False
         if value == "1" or value.lower() == "true":
             return True
-        raise ValueError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
+        raise EnvError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
 
 
 class Number(EnValidator):
@@ -109,7 +111,7 @@ class Number(EnValidator):
             value = float(value)
             return int(value) if float.is_integer(value) else value
         except ValueError as ex:
-            raise ValueError(
+            raise EnvError(
                 self.format_validator_desc(f"Invalid {self.name} input: {value}")
             ) from ex
 
@@ -128,7 +130,7 @@ class RegexEnValidator(EnValidator):
         match = re.search(re.compile(self.pattern), value)
         if match:
             return value
-        raise ValueError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
+        raise EnvError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
 
 
 class Email(RegexEnValidator):
@@ -158,10 +160,14 @@ class Port(EnValidator):
 
     def __validate__value__(self, value) -> Any:
         """Validate port value."""
-        value = float(value)
-        if float.is_integer(value) and 1 <= value <= 65535:
-            return int(value)
-        raise ValueError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
+        try:
+            value = float(value)
+            if float.is_integer(value) and 1 <= value <= 65535:
+                return int(value)
+        except ValueError:
+            ...
+
+        raise EnvError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
 
 
 class Url(EnValidator):
@@ -176,7 +182,7 @@ class Url(EnValidator):
         result = urlparse(value)
         if result.scheme and result.netloc:
             return value
-        raise ValueError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
+        raise EnvError(self.format_validator_desc(f"Invalid {self.name} input: {value}"))
 
 
 class Json(EnValidator):
@@ -192,6 +198,6 @@ class Json(EnValidator):
             value = json.loads(value)
             return value
         except json.decoder.JSONDecodeError as ex:
-            raise ValueError(
+            raise EnvError(
                 self.format_validator_desc(f"Invalid {self.name} input: {value}")
             ) from ex
