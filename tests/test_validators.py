@@ -4,6 +4,7 @@ import pytest
 from pytest_lazyfixture import lazy_fixture
 
 from envalidate import Bool, Email, EnValidator, IPAddress, Json, Number, Port, Str, Url
+from envalidate.exceptions import EnvError
 
 
 @pytest.mark.parametrize(
@@ -350,7 +351,7 @@ def test_validators_invalid(monkeypatch, validator: EnValidator, value):
     key = "TEST_KEY"
     raw_value = str(value)
     monkeypatch.setenv(key, raw_value)
-    with pytest.raises(ValueError):
+    with pytest.raises(EnvError):
         validator.envalidate(raw_value)
 
 
