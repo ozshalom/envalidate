@@ -12,6 +12,7 @@ from .validators import (
     Str,
     Url,
 )
+from .version import VERSION
 
 __all__ = (
     "EnValidator",
@@ -24,4 +25,5 @@ __all__ = (
     "Port",
     "Url",
     "Json",
+    "VERSION",
 )
