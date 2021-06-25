@@ -26,5 +26,11 @@ class EnvMissingError(EnvError):
 
         :param env_name:
         """
-        message = f"{env_name} : missing environment key"
+        message = "missing environment key"
         super().__init__(message)
+        self.__env_name__ = env_name
+
+    @property
+    def env_name(self):
+        """Environment Name."""
+        return self.__env_name__
