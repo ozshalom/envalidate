@@ -1,0 +1,14 @@
+[paths]
+source =
+   envalidate
+   */site-packages
+
+[run]
+branch = true
+parallel = true
+source =
+    envalidate
+
+[report]
+show_missing = true
+precision = 2
