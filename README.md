@@ -44,6 +44,8 @@ validators = {
 
 env = read_env(os.environ, validators)
 
+print(f"my program default ip is: {env.IP}")
+
 ```
 
 # Validator types #
